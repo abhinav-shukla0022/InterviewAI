@@ -112,7 +112,7 @@ function Interview() {
   useEffect(() => {
     const fetchTracks = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/interview-tracks")
+        const res = await axios.get("https://interviewai-bnux.onrender.com/api/interview-tracks")
         setTracks(res.data || [])
         setSelectedTrack(res.data?.[0] || null)
       } catch (err) {
@@ -140,7 +140,7 @@ function Interview() {
       // Upload resume
       const formData = new FormData()
       formData.append("resume", file)
-      const uploadRes = await axios.post("http://localhost:5000/upload-resume", formData)
+      const uploadRes = await axios.post("https://interviewai-bnux.onrender.com/upload-resume", formData)
 
       if (!uploadRes.data.text) {
         alert("Failed to extract text from PDF. Please try another file.")
@@ -153,7 +153,7 @@ function Interview() {
       // Start mock session — gets all 10 questions at once
       const token = localStorage.getItem("token")
       const res = await axios.post(
-        "http://localhost:5000/api/mock/start",
+        "https://interviewai-bnux.onrender.com/api/mock/start",
         { track: selectedTrack.id, difficulty, resumeText: extractedText },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -182,7 +182,7 @@ function Interview() {
       setLoading(true)
       const token = localStorage.getItem("token")
       const res = await axios.post(
-        "http://localhost:5000/api/mock/answer",
+        "https://interviewai-bnux.onrender.com/api/mock/answer",
         { sessionId, answer, questionIndex: currentIndex },
         { headers: { Authorization: `Bearer ${token}` } }
       )

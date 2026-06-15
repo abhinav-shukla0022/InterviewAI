@@ -19,7 +19,7 @@ function Prep() {
     const fetchResources = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await axios.get("http://localhost:5000/api/resources", {
+        const res = await axios.get("https://interviewai-bnux.onrender.com/api/resources", {
           headers: { Authorization: `Bearer ${token}` }
         })
         setResources(res.data)
@@ -67,7 +67,7 @@ function Prep() {
     try {
       const formData = new FormData()
       formData.append("resume", file)
-      const res = await axios.post("http://localhost:5000/upload-resume", formData)
+      const res = await axios.post("https://interviewai-bnux.onrender.com/upload-resume", formData)
       setResumeText(res.data.text)
       setModeMessage("Resume parsed. Generate insights now.")
     } catch (error) {
@@ -88,7 +88,7 @@ function Prep() {
     try {
       const token = localStorage.getItem("token")
       const res = await axios.post(
-        "http://localhost:5000/api/resume/analyze",
+        "https://interviewai-bnux.onrender.com/api/resume/analyze",
         { resumeText, targetRole },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -112,7 +112,7 @@ function Prep() {
     try {
       const token = localStorage.getItem("token")
       const res = await axios.post(
-        "http://localhost:5000/api/prepare/skill-gap",
+        "https://interviewai-bnux.onrender.com/api/prepare/skill-gap",
         { resumeText, targetRole },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -134,7 +134,7 @@ function Prep() {
     try {
       const token = localStorage.getItem("token")
       const res = await axios.post(
-        "http://localhost:5000/api/prepare/roadmap",
+        "https://interviewai-bnux.onrender.com/api/prepare/roadmap",
         { resumeText, targetRole },
         { headers: { Authorization: `Bearer ${token}` } }
       )

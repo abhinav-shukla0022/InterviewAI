@@ -43,7 +43,7 @@ function Dashboard() {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await axios.get("http://localhost:5000/history", {
+        const res = await axios.get("https://interviewai-bnux.onrender.com/history", {
           headers: {
             Authorization: `Bearer ${token}`
           }
