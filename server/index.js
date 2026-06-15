@@ -23,6 +23,9 @@ if (!fs.existsSync(uploadDirectory)) {
   fs.mkdirSync(uploadDirectory, { recursive: true })
 }
 
+console.log("KEY EXISTS:", !!process.env.GEMINI_API_KEY);
+console.log("KEY PREFIX:", process.env.GEMINI_API_KEY?.substring(0, 8));
+
 // ─── Gemini Setup ─────────────────────────────────────────────────────────────
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
