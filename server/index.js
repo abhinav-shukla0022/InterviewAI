@@ -7,7 +7,7 @@ const User = require("./models/user")
 const Interview = require("./models/Interview")
 const ResumeAnalysis = require("./models/ResumeAnalysis")
 // ADD THIS LINE after your existing model imports
-const PrepProgress = require("./models/PrepProgress")
+const PrepProgress = require("./models/prepprogress")
 const { GoogleGenerativeAI } = require("@google/generative-ai")
 
 const bcrypt = require("bcryptjs")
