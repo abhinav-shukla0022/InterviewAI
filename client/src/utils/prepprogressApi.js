@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const BASE = "http://localhost:5000"
+const BASE = "https://interviewai-bnux.onrender.com"
 
 const getHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`

@@ -35,7 +35,7 @@ function History() {
     try {
       setLoading(true)
       const token = localStorage.getItem("token")
-      const res = await axios.get("http://localhost:5000/history", {
+      const res = await axios.get("https://interviewai-bnux.onrender.com/history", {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -136,7 +136,7 @@ function History() {
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token")
-      await axios.delete(`http://localhost:5000/delete-history/${id}`, {
+      await axios.delete(`https://interviewai-bnux.onrender.com/delete-history/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
