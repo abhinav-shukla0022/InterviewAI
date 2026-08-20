@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom"
 
+import Landing from "./pages/Landing"
 import Login from "./pages/Login"
 import Signup from "./pages/Signup"
 import Dashboard from "./pages/Dashboard"
@@ -13,8 +14,12 @@ import InterviewPreparation from "./pages/InterviewPreparation"
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      {/* Public */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/signin" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+
+      {/* Protected app */}
       <Route
         path="/dashboard"
         element={
@@ -55,13 +60,17 @@ function App() {
           </ProtectedRoute>
         }
       />
-      
-    <Route
-  path="/interview-preparation"
-  element={<InterviewPreparation />}
-/>
+      <Route
+        path="/interview-preparation"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <InterviewPreparation />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
     </Routes>
-    
   )
 }
 

@@ -8,6 +8,7 @@ const Interview = require("./models/Interview")
 const ResumeAnalysis = require("./models/ResumeAnalysis")
 // ADD THIS LINE after your existing model imports
 const PrepProgress = require("./models/prepprogress")
+const QuestionBank = require("./models/QuestionBank")
 const { GoogleGenerativeAI } = require("@google/generative-ai")
 
 const bcrypt = require("bcryptjs")
@@ -391,47 +392,143 @@ ${resumeText.substring(0, 2000)}`
 app.get("/api/interview-tracks", (req, res) => res.json(interviewTracks))
 
 // ─── Mock Start (fetches all 10 questions at once) ────────────────────────────
+// ─── Question Bank helpers ────────────────────────────────────────────────────
+const QUESTIONS_PER_SESSION = 5
+const BATCH_SIZE = 20
+
+async function generateQuestionBatch({ userId, track, difficulty, resumeText }) {
+  const batchId = `batch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  const prompt = `You are a senior technical interviewer designing a question bank for multiple mock interview sessions.
+
+Track: ${track}
+Difficulty: ${difficulty}
+These ${BATCH_SIZE} questions will be split across multiple sessions of exactly ${QUESTIONS_PER_SESSION} questions each.
+
+Requirements:
+- Return ONLY a valid JSON array of exactly ${BATCH_SIZE} objects
+- No markdown, no explanation, no numbering outside JSON
+- Each object: {"question":"...","topic":"...","difficulty":"${difficulty}","type":"technical"}
+- Questions must be UNIQUE and meaningfully different (no near-duplicates)
+- Mix conceptual, scenario-based, debugging, practical, and architecture questions
+- Sound like a real interviewer, not a textbook quiz
+- Match ${difficulty} difficulty for a ${track} role
+- Cover diverse topics relevant to ${track}
+
+Resume context (optional):
+${resumeText ? resumeText.substring(0, 2500) : "No resume provided. Use general strong " + track + " interview questions."}
+
+Example shape:
+[{"question":"You are building a dashboard with reusable components. How would you choose between local state, Context, and a state library?","topic":"State management","difficulty":"${difficulty}","type":"technical"}]`
+
+  const raw = await callGeminiWithRetry(prompt)
+  let parsed = []
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    const m = raw.match(/\[[\s\S]*\]/)
+    if (m) {
+      try { parsed = JSON.parse(m[0]) } catch { parsed = [] }
+    }
+  }
+
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error("Failed to parse question batch from AI.")
+  }
+
+  const docs = []
+  for (const item of parsed) {
+    const qText = typeof item === "string" ? item : item?.question
+    if (!qText || String(qText).trim().length < 8) continue
+    docs.push({
+      user: userId,
+      track,
+      difficulty,
+      question: String(qText).trim(),
+      topic: (item && item.topic) || "",
+      type: (item && item.type) || "technical",
+      status: "unused",
+      batchId,
+      sessionId: null,
+      usedAt: null
+    })
+  }
+
+  if (docs.length < QUESTIONS_PER_SESSION) {
+    throw new Error("AI returned too few valid questions. Please try again.")
+  }
+
+  await QuestionBank.insertMany(docs.slice(0, BATCH_SIZE))
+  return batchId
+}
+
+async function reserveQuestions({ userId, track, difficulty, sessionId, count = QUESTIONS_PER_SESSION }) {
+  const reserved = []
+  for (let i = 0; i < count; i++) {
+    const doc = await QuestionBank.findOneAndUpdate(
+      { user: userId, track, difficulty, status: "unused" },
+      { $set: { status: "used", usedAt: new Date(), sessionId } },
+      { sort: { createdAt: 1 }, new: true }
+    )
+    if (!doc) break
+    reserved.push(doc)
+  }
+  return reserved
+}
+// ─── Question Bank helpers ────────────────────────────────────────────────────
+// ─── Mock Start (5 questions from user-specific question bank) ────────────────
 app.post("/api/mock/start", authenticate, async (req, res) => {
   try {
     const { resumeText, track = "general", difficulty = "Medium" } = req.body
-
-    const prompt = `You are a strict technical interviewer conducting a ${difficulty} difficulty ${track} interview.
-
-Generate EXACTLY 10 interview questions based on the resume below.
-Return ONLY a valid JSON array of 10 strings. No markdown, no explanation, no numbering.
-
-Example:
-["Question one?","Question two?","Question three?","Question four?","Question five?","Question six?","Question seven?","Question eight?","Question nine?","Question ten?"]
-
-Resume:
-${resumeText ? resumeText.substring(0, 3000) : `No resume provided. Generate general ${track} questions.`}`
-
-    const raw = await callGeminiWithRetry(prompt)
-
-    let questions = []
-    try {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        questions = parsed.map((q) => String(q).trim()).filter((q) => q.length > 5)
-      }
-    } catch {
-      questions = raw
-        .split(/\n+/)
-        .map((l) => l.replace(/^\d+[\.\)]\s*/, "").replace(/^["']|["']$/g, "").trim())
-        .filter((l) => l.length > 10)
-        .slice(0, 10)
-    }
-
-    if (questions.length === 0)
-      return res.status(500).json({ error: "Failed to generate questions. Please try again." })
-
-    while (questions.length < 10) questions.push(`Tell me about your experience with ${track}.`)
-    questions = questions.slice(0, 10)
-
+    const userId = req.user.id
     const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
+    let unusedCount = await QuestionBank.countDocuments({
+      user: userId,
+      track,
+      difficulty,
+      status: "unused"
+    })
+
+    if (unusedCount < QUESTIONS_PER_SESSION) {
+      await generateQuestionBatch({ userId, track, difficulty, resumeText })
+      unusedCount = await QuestionBank.countDocuments({
+        user: userId,
+        track,
+        difficulty,
+        status: "unused"
+      })
+    }
+
+    if (unusedCount < QUESTIONS_PER_SESSION) {
+      return res.status(500).json({
+        error: "Could not prepare enough questions. Please try again in a moment."
+      })
+    }
+
+    const reserved = await reserveQuestions({
+      userId,
+      track,
+      difficulty,
+      sessionId,
+      count: QUESTIONS_PER_SESSION
+    })
+
+    if (reserved.length < QUESTIONS_PER_SESSION) {
+      if (reserved.length) {
+        await QuestionBank.updateMany(
+          { _id: { $in: reserved.map((r) => r._id) } },
+          { $set: { status: "unused", sessionId: null, usedAt: null } }
+        )
+      }
+      return res.status(409).json({
+        error: "Could not reserve questions. Please try starting again."
+      })
+    }
+
+    const questions = reserved.map((r) => r.question)
+
     await new Interview({
-      user: req.user.id,
+      user: userId,
       sessionId,
       question: questions[0],
       questions,
@@ -448,15 +545,15 @@ ${resumeText ? resumeText.substring(0, 3000) : `No resume provided. Generate gen
       sessionId,
       question: questions[0],
       questions,
-      totalQuestions: questions.length,
-      currentQuestion: 1
+      totalQuestions: QUESTIONS_PER_SESSION,
+      currentQuestion: 1,
+      fromBank: true
     })
   } catch (err) {
     console.error("Mock start error:", err.message)
     res.status(500).json({ error: err.message || "Failed to start interview." })
   }
 })
-
 // ─── Mock Answer ──────────────────────────────────────────────────────────────
 app.post("/api/mock/answer", authenticate, async (req, res) => {
   try {

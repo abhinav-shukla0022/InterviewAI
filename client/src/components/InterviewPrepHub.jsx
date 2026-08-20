@@ -1,217 +1,233 @@
-import { useState, useEffect } from "react";
-import { usePrepProgress } from "../hooks/usePrepProgress";
+import { useState, useEffect, useMemo } from "react"
+import { usePrepProgress } from "../hooks/usePrepProgress"
+import {
+  BookOpen,
+  Monitor,
+  Settings,
+  Link2,
+  Brain,
+  Building2,
+  Bot,
+  Play,
+  CheckCircle2,
+  Circle,
+  StickyNote,
+  Loader2,
+  X,
+  ListChecks,
+  Video,
+  ArrowRight,
+  Clock,
+  Search
+} from "lucide-react"
+
+const ACCENT = "#7C6BFF"
 
 const FIELDS = [
-  { id: "frontend", label: "Frontend Engineer", icon: "🖥️", color: "#6366f1", tags: ["React", "CSS", "JS", "TypeScript", "Performance"] },
-  { id: "backend", label: "Backend Engineer", icon: "⚙️", color: "#0ea5e9", tags: ["Node.js", "APIs", "Databases", "Security", "DevOps"] },
-  { id: "fullstack", label: "Full Stack", icon: "🔗", color: "#10b981", tags: ["Architecture", "Data Flow", "Deployment", "APIs", "Security"] },
-  { id: "dsa", label: "DSA / Algorithms", icon: "🧠", color: "#f59e0b", tags: ["Arrays", "Trees", "Graphs", "DP", "Complexity"] },
-  { id: "system-design", label: "System Design", icon: "🏗️", color: "#8b5cf6", tags: ["Scalability", "Databases", "Caching", "Microservices", "Reliability"] },
-  { id: "ml", label: "Machine Learning", icon: "🤖", color: "#ec4899", tags: ["Python", "TensorFlow", "Statistics", "Feature Eng.", "MLOps"] },
-];
+  { id: "frontend", label: "Frontend Engineer", icon: Monitor, color: "#7C6BFF", tags: ["React", "JavaScript", "TypeScript", "CSS", "Performance"] },
+  { id: "backend", label: "Backend Engineer", icon: Settings, color: "#38BDF8", tags: ["Node.js", "APIs", "Databases", "Security", "DevOps"] },
+  { id: "fullstack", label: "Full Stack", icon: Link2, color: "#34D399", tags: ["Architecture", "Data Flow", "Deployment", "APIs"] },
+  { id: "dsa", label: "DSA / Algorithms", icon: Brain, color: "#FBBF24", tags: ["Arrays", "Trees", "Graphs", "DP"] },
+  { id: "system-design", label: "System Design", icon: Building2, color: "#A78BFA", tags: ["Scalability", "Caching", "Microservices"] },
+  { id: "ml", label: "Machine Learning", icon: Bot, color: "#F472B6", tags: ["Python", "Statistics", "MLOps"] }
+]
 
 const RESOURCES = {
   frontend: [
-    { title: "React Interview Deep Dive", url: "https://www.youtube.com/watch?v=w7ejDZ8SWv8", duration: "6h 20m", thumb: "https://img.youtube.com/vi/w7ejDZ8SWv8/mqdefault.jpg" },
-    { title: "CSS Grid & Flexbox Mastery", url: "https://www.youtube.com/watch?v=jV8B24rSN5o", duration: "2h 05m", thumb: "https://img.youtube.com/vi/jV8B24rSN5o/mqdefault.jpg" },
-    { title: "JavaScript Performance Patterns", url: "https://www.youtube.com/watch?v=cCOL7MC4Pl0", duration: "45m", thumb: "https://img.youtube.com/vi/cCOL7MC4Pl0/mqdefault.jpg" },
-    { title: "TypeScript Crash Course", url: "https://www.youtube.com/watch?v=BCg4U1FzODs", duration: "1h 30m", thumb: "https://img.youtube.com/vi/BCg4U1FzODs/mqdefault.jpg" },
+    { title: "React Interview Deep Dive", url: "https://www.youtube.com/watch?v=w7ejDZ8SWv8", duration: "6h 20m", level: "Advanced", thumb: "https://img.youtube.com/vi/w7ejDZ8SWv8/mqdefault.jpg" },
+    { title: "CSS Grid & Flexbox Mastery", url: "https://www.youtube.com/watch?v=jV8B24rSN5o", duration: "2h 05m", level: "Intermediate", thumb: "https://img.youtube.com/vi/jV8B24rSN5o/mqdefault.jpg" },
+    { title: "JavaScript Performance Patterns", url: "https://www.youtube.com/watch?v=cCOL7MC4Pl0", duration: "45m", level: "Advanced", thumb: "https://img.youtube.com/vi/cCOL7MC4Pl0/mqdefault.jpg" },
+    { title: "TypeScript Crash Course", url: "https://www.youtube.com/watch?v=BCg4U1FzODs", duration: "1h 30m", level: "Beginner", thumb: "https://img.youtube.com/vi/BCg4U1FzODs/mqdefault.jpg" }
   ],
   backend: [
-    { title: "Backend Interview Mastery (8h)", url: "https://www.youtube.com/watch?v=ChVE-JbtYbM", duration: "8h+", thumb: "https://img.youtube.com/vi/ChVE-JbtYbM/mqdefault.jpg" },
-    { title: "Node.js Design Patterns", url: "https://www.youtube.com/watch?v=ENrzD9HAZK4", duration: "3h 10m", thumb: "https://img.youtube.com/vi/ENrzD9HAZK4/mqdefault.jpg" },
-    { title: "REST vs GraphQL APIs", url: "https://www.youtube.com/watch?v=yWzKJPw_VzM", duration: "30m", thumb: "https://img.youtube.com/vi/yWzKJPw_VzM/mqdefault.jpg" },
-    { title: "Database Design & Indexing", url: "https://www.youtube.com/watch?v=ztHopE5Wnpc", duration: "55m", thumb: "https://img.youtube.com/vi/ztHopE5Wnpc/mqdefault.jpg" },
+    { title: "Backend Interview Mastery", url: "https://www.youtube.com/watch?v=ChVE-JbtYbM", duration: "8h+", level: "Advanced", thumb: "https://img.youtube.com/vi/ChVE-JbtYbM/mqdefault.jpg" },
+    { title: "Node.js Design Patterns", url: "https://www.youtube.com/watch?v=ENrzD9HAZK4", duration: "3h 10m", level: "Intermediate", thumb: "https://img.youtube.com/vi/ENrzD9HAZK4/mqdefault.jpg" },
+    { title: "REST vs GraphQL", url: "https://www.youtube.com/watch?v=yWzKJPw_VzM", duration: "30m", level: "Beginner", thumb: "https://img.youtube.com/vi/yWzKJPw_VzM/mqdefault.jpg" },
+    { title: "Database Design & Indexing", url: "https://www.youtube.com/watch?v=ztHopE5Wnpc", duration: "55m", level: "Intermediate", thumb: "https://img.youtube.com/vi/ztHopE5Wnpc/mqdefault.jpg" }
   ],
   fullstack: [
-    { title: "Full Stack Interview Prep", url: "https://www.youtube.com/watch?v=ysEN5RaKOlA", duration: "5h+", thumb: "https://img.youtube.com/vi/ysEN5RaKOlA/mqdefault.jpg" },
-    { title: "MERN Stack Deep Dive", url: "https://www.youtube.com/watch?v=7CqJlxBYj-M", duration: "3h 40m", thumb: "https://img.youtube.com/vi/7CqJlxBYj-M/mqdefault.jpg" },
-    { title: "Docker & Deployment", url: "https://www.youtube.com/watch?v=gAkwW2tuIqE", duration: "1h 10m", thumb: "https://img.youtube.com/vi/gAkwW2tuIqE/mqdefault.jpg" },
-    { title: "System Integration Patterns", url: "https://www.youtube.com/watch?v=rI8tNMsozo0", duration: "50m", thumb: "https://img.youtube.com/vi/rI8tNMsozo0/mqdefault.jpg" },
+    { title: "Full Stack Interview Prep", url: "https://www.youtube.com/watch?v=ysEN5RaKOlA", duration: "5h+", level: "Advanced", thumb: "https://img.youtube.com/vi/ysEN5RaKOlA/mqdefault.jpg" },
+    { title: "MERN Stack Deep Dive", url: "https://www.youtube.com/watch?v=7CqJlxBYj-M", duration: "3h 40m", level: "Intermediate", thumb: "https://img.youtube.com/vi/7CqJlxBYj-M/mqdefault.jpg" },
+    { title: "Docker & Deployment", url: "https://www.youtube.com/watch?v=gAkwW2tuIqE", duration: "1h 10m", level: "Intermediate", thumb: "https://img.youtube.com/vi/gAkwW2tuIqE/mqdefault.jpg" },
+    { title: "System Integration Patterns", url: "https://www.youtube.com/watch?v=rI8tNMsozo0", duration: "50m", level: "Advanced", thumb: "https://img.youtube.com/vi/rI8tNMsozo0/mqdefault.jpg" }
   ],
   dsa: [
-    { title: "DSA Full Course (Abdul Bari)", url: "https://www.youtube.com/watch?v=0IAPZzGSbME", duration: "20h+", thumb: "https://img.youtube.com/vi/0IAPZzGSbME/mqdefault.jpg" },
-    { title: "LeetCode Patterns & Techniques", url: "https://www.youtube.com/watch?v=A3syeQgB-qw", duration: "4h 30m", thumb: "https://img.youtube.com/vi/A3syeQgB-qw/mqdefault.jpg" },
-    { title: "Dynamic Programming Masterclass", url: "https://www.youtube.com/watch?v=oBt53YbR9Kk", duration: "5h", thumb: "https://img.youtube.com/vi/oBt53YbR9Kk/mqdefault.jpg" },
-    { title: "Graph Algorithms Explained", url: "https://www.youtube.com/watch?v=tWVWeAqZ0WU", duration: "2h", thumb: "https://img.youtube.com/vi/tWVWeAqZ0WU/mqdefault.jpg" },
+    { title: "DSA Full Course", url: "https://www.youtube.com/watch?v=0IAPZzGSbME", duration: "20h+", level: "Beginner", thumb: "https://img.youtube.com/vi/0IAPZzGSbME/mqdefault.jpg" },
+    { title: "LeetCode Patterns", url: "https://www.youtube.com/watch?v=A3syeQgB-qw", duration: "4h 30m", level: "Intermediate", thumb: "https://img.youtube.com/vi/A3syeQgB-qw/mqdefault.jpg" },
+    { title: "Dynamic Programming", url: "https://www.youtube.com/watch?v=oBt53YbR9Kk", duration: "5h", level: "Advanced", thumb: "https://img.youtube.com/vi/oBt53YbR9Kk/mqdefault.jpg" },
+    { title: "Graph Algorithms", url: "https://www.youtube.com/watch?v=tWVWeAqZ0WU", duration: "2h", level: "Intermediate", thumb: "https://img.youtube.com/vi/tWVWeAqZ0WU/mqdefault.jpg" }
   ],
   "system-design": [
-    { title: "System Design Crash Course", url: "https://www.youtube.com/watch?v=i7twT3x5yv8", duration: "8h+", thumb: "https://img.youtube.com/vi/i7twT3x5yv8/mqdefault.jpg" },
-    { title: "Designing Data-Intensive Apps", url: "https://www.youtube.com/watch?v=PdtlXdse7pw", duration: "1h 20m", thumb: "https://img.youtube.com/vi/PdtlXdse7pw/mqdefault.jpg" },
-    { title: "Microservices Architecture", url: "https://www.youtube.com/watch?v=rv4LlmLmVWk", duration: "1h 45m", thumb: "https://img.youtube.com/vi/rv4LlmLmVWk/mqdefault.jpg" },
-    { title: "CAP Theorem Explained", url: "https://www.youtube.com/watch?v=BHqjEjzAicA", duration: "40m", thumb: "https://img.youtube.com/vi/BHqjEjzAicA/mqdefault.jpg" },
+    { title: "System Design Crash Course", url: "https://www.youtube.com/watch?v=i7twT3x5yv8", duration: "8h+", level: "Advanced", thumb: "https://img.youtube.com/vi/i7twT3x5yv8/mqdefault.jpg" },
+    { title: "Data-Intensive Apps", url: "https://www.youtube.com/watch?v=PdtlXdse7pw", duration: "1h 20m", level: "Advanced", thumb: "https://img.youtube.com/vi/PdtlXdse7pw/mqdefault.jpg" },
+    { title: "Microservices Architecture", url: "https://www.youtube.com/watch?v=rv4LlmLmVWk", duration: "1h 45m", level: "Intermediate", thumb: "https://img.youtube.com/vi/rv4LlmLmVWk/mqdefault.jpg" },
+    { title: "CAP Theorem", url: "https://www.youtube.com/watch?v=BHqjEjzAicA", duration: "40m", level: "Beginner", thumb: "https://img.youtube.com/vi/BHqjEjzAicA/mqdefault.jpg" }
   ],
   ml: [
-    { title: "ML Interview Prep Guide", url: "https://www.youtube.com/watch?v=aircAruvnKk", duration: "10h+", thumb: "https://img.youtube.com/vi/aircAruvnKk/mqdefault.jpg" },
-    { title: "Statistics for Data Scientists", url: "https://www.youtube.com/watch?v=xxpc-HPKN28", duration: "2h", thumb: "https://img.youtube.com/vi/xxpc-HPKN28/mqdefault.jpg" },
-    { title: "Python ML with scikit-learn", url: "https://www.youtube.com/watch?v=pqNCD_5r0IU", duration: "1h 30m", thumb: "https://img.youtube.com/vi/pqNCD_5r0IU/mqdefault.jpg" },
-    { title: "Neural Networks from Scratch", url: "https://www.youtube.com/watch?v=w8yWXqWQYmU", duration: "20m", thumb: "https://img.youtube.com/vi/w8yWXqWQYmU/mqdefault.jpg" },
-  ],
-};
+    { title: "ML Interview Prep", url: "https://www.youtube.com/watch?v=aircAruvnKk", duration: "10h+", level: "Beginner", thumb: "https://img.youtube.com/vi/aircAruvnKk/mqdefault.jpg" },
+    { title: "Statistics for DS", url: "https://www.youtube.com/watch?v=xxpc-HPKN28", duration: "2h", level: "Intermediate", thumb: "https://img.youtube.com/vi/xxpc-HPKN28/mqdefault.jpg" },
+    { title: "scikit-learn ML", url: "https://www.youtube.com/watch?v=pqNCD_5r0IU", duration: "1h 30m", level: "Intermediate", thumb: "https://img.youtube.com/vi/pqNCD_5r0IU/mqdefault.jpg" },
+    { title: "Neural Nets from Scratch", url: "https://www.youtube.com/watch?v=w8yWXqWQYmU", duration: "20m", level: "Advanced", thumb: "https://img.youtube.com/vi/w8yWXqWQYmU/mqdefault.jpg" }
+  ]
+}
 
 const STRATEGIES = {
   frontend: [
-    { week: 1, title: "JavaScript & TypeScript Core", tasks: ["Closures, prototypes, event loop", "TypeScript generics & utility types", "ES2020+ features", "Browser APIs & Storage"], icon: "📚" },
-    { week: 2, title: "React Deep Dive", tasks: ["Hooks internals (useMemo, useCallback)", "State management patterns", "Performance optimization", "Testing with RTL"], icon: "⚛️" },
-    { week: 3, title: "CSS & UI Engineering", tasks: ["CSS Grid & Flexbox mastery", "Responsive design patterns", "Accessibility (WCAG 2.1)", "Animation & performance"], icon: "🎨" },
-    { week: 4, title: "Mock Interviews & Review", tasks: ["5 timed challenges/day", "Build a feature from scratch", "Review weak areas", "Behavioral questions"], icon: "🎯" },
+    { week: 1, title: "JavaScript & TypeScript Core", hours: 12, tasks: ["Closures, prototypes, event loop", "TypeScript generics & utility types", "ES2020+ features", "Browser APIs & Storage"] },
+    { week: 2, title: "React Deep Dive", hours: 14, tasks: ["Hooks internals (useMemo, useCallback)", "State management patterns", "Performance optimization", "Testing with RTL"] },
+    { week: 3, title: "CSS & UI Engineering", hours: 10, tasks: ["CSS Grid & Flexbox mastery", "Responsive design patterns", "Accessibility (WCAG 2.1)", "Animation & performance"] },
+    { week: 4, title: "Mock Interviews & Review", hours: 10, tasks: ["5 timed challenges/day", "Build a feature from scratch", "Review weak areas", "Behavioral questions"] }
   ],
   backend: [
-    { week: 1, title: "APIs & Node.js Fundamentals", tasks: ["REST design principles", "Express middleware patterns", "Authentication (JWT, OAuth)", "Error handling strategies"], icon: "📡" },
-    { week: 2, title: "Databases & Data Modeling", tasks: ["SQL vs NoSQL tradeoffs", "MongoDB aggregation pipeline", "Indexing & query optimization", "Transactions & ACID"], icon: "🗃️" },
-    { week: 3, title: "Security & Scalability", tasks: ["OWASP Top 10", "Rate limiting & caching", "Message queues (Redis)", "Containerization basics"], icon: "🔐" },
-    { week: 4, title: "System Polish & Practice", tasks: ["Build a REST API from scratch", "Write integration tests", "Review architecture decisions", "Mock interviews"], icon: "🎯" },
+    { week: 1, title: "APIs & Node.js Fundamentals", hours: 12, tasks: ["REST design principles", "Express middleware", "JWT / OAuth", "Error handling"] },
+    { week: 2, title: "Databases & Data Modeling", hours: 14, tasks: ["SQL vs NoSQL", "MongoDB aggregation", "Indexing", "Transactions"] },
+    { week: 3, title: "Security & Scalability", hours: 12, tasks: ["OWASP Top 10", "Rate limiting", "Redis queues", "Containers"] },
+    { week: 4, title: "System Polish & Practice", hours: 10, tasks: ["Build REST API", "Integration tests", "Architecture review", "Mocks"] }
   ],
   fullstack: [
-    { week: 1, title: "End-to-End Architecture", tasks: ["MVC & clean architecture", "API contract design", "Data flow & state sync", "Authentication flows"], icon: "🏗️" },
-    { week: 2, title: "Frontend + Backend Integration", tasks: ["CORS & security headers", "File uploads & streams", "Real-time with WebSockets", "Error boundaries"], icon: "🔗" },
-    { week: 3, title: "DevOps & Deployment", tasks: ["Docker & containerization", "CI/CD pipelines", "Environment management", "Monitoring & logging"], icon: "🚀" },
-    { week: 4, title: "Project & Mock Sessions", tasks: ["Build a full-stack app", "Code review practice", "Performance profiling", "System design basics"], icon: "🎯" },
+    { week: 1, title: "End-to-End Architecture", hours: 12, tasks: ["Clean architecture", "API contracts", "State sync", "Auth flows"] },
+    { week: 2, title: "Frontend + Backend Integration", hours: 12, tasks: ["CORS & headers", "Uploads", "WebSockets", "Error boundaries"] },
+    { week: 3, title: "DevOps & Deployment", hours: 10, tasks: ["Docker", "CI/CD", "Envs", "Monitoring"] },
+    { week: 4, title: "Project & Mocks", hours: 12, tasks: ["Full-stack app", "Code review", "Profiling", "System design"] }
   ],
   dsa: [
-    { week: 1, title: "Arrays, Strings & Hashing", tasks: ["Two-pointer & sliding window", "HashMap patterns", "String manipulation", "Prefix sums"], icon: "📊" },
-    { week: 2, title: "Trees, Graphs & Recursion", tasks: ["BST operations & traversal", "BFS & DFS patterns", "Backtracking problems", "Trie implementation"], icon: "🌳" },
-    { week: 3, title: "Dynamic Programming", tasks: ["Memoization vs tabulation", "Classic DP problems", "Knapsack & coin change", "Interval & sequence DP"], icon: "💡" },
-    { week: 4, title: "Timed Practice & Review", tasks: ["2 LeetCode mediums/day", "1 hard problem/day", "Mock OA simulations", "Big-O analysis drills"], icon: "⏱️" },
+    { week: 1, title: "Arrays, Strings & Hashing", hours: 14, tasks: ["Two-pointer", "HashMap patterns", "Strings", "Prefix sums"] },
+    { week: 2, title: "Trees, Graphs & Recursion", hours: 14, tasks: ["BST", "BFS/DFS", "Backtracking", "Trie"] },
+    { week: 3, title: "Dynamic Programming", hours: 16, tasks: ["Memoization", "Classic DP", "Knapsack", "Sequence DP"] },
+    { week: 4, title: "Timed Practice", hours: 12, tasks: ["2 mediums/day", "1 hard/day", "Mock OA", "Big-O drills"] }
   ],
   "system-design": [
-    { week: 1, title: "Foundations & Components", tasks: ["CAP theorem & consistency", "SQL vs NoSQL selection", "Caching strategies (Redis)", "Load balancing patterns"], icon: "⚙️" },
-    { week: 2, title: "Scalability Patterns", tasks: ["Horizontal vs vertical scaling", "Database sharding", "CDN & edge computing", "Rate limiting at scale"], icon: "📈" },
-    { week: 3, title: "Real Systems Deep Dive", tasks: ["Design Twitter/Instagram", "Design a URL shortener", "Design a payment system", "Microservices communication"], icon: "🔭" },
-    { week: 4, title: "Interview Practice", tasks: ["Timed design sessions (45 min)", "Whiteboard practice", "Estimations & back-of-envelope", "Review trade-off decisions"], icon: "🗣️" },
+    { week: 1, title: "Foundations", hours: 12, tasks: ["CAP theorem", "SQL vs NoSQL", "Caching", "Load balancing"] },
+    { week: 2, title: "Scalability", hours: 12, tasks: ["Horizontal scaling", "Sharding", "CDN", "Rate limiting"] },
+    { week: 3, title: "Real Systems", hours: 14, tasks: ["Twitter feed", "URL shortener", "Payments", "Microservices"] },
+    { week: 4, title: "Interview Practice", hours: 10, tasks: ["45-min designs", "Whiteboard", "Estimations", "Trade-offs"] }
   ],
   ml: [
-    { week: 1, title: "Math & Statistics", tasks: ["Linear algebra refresher", "Probability & Bayes theorem", "Statistical hypothesis testing", "Information theory basics"], icon: "📐" },
-    { week: 2, title: "Classical ML Algorithms", tasks: ["Regression & regularization", "Decision trees & ensembles", "SVM & kernel methods", "Clustering algorithms"], icon: "🧬" },
-    { week: 3, title: "Deep Learning & MLOps", tasks: ["Neural network architectures", "Training techniques & optimizers", "Model evaluation metrics", "Feature engineering"], icon: "🤖" },
-    { week: 4, title: "Coding & Case Practice", tasks: ["Implement models from scratch", "ML system design questions", "A/B testing frameworks", "Mock ML interviews"], icon: "💻" },
-  ],
-};
+    { week: 1, title: "Math & Statistics", hours: 12, tasks: ["Linear algebra", "Probability", "Hypothesis testing", "Info theory"] },
+    { week: 2, title: "Classical ML", hours: 14, tasks: ["Regression", "Trees & ensembles", "SVM", "Clustering"] },
+    { week: 3, title: "Deep Learning", hours: 14, tasks: ["Architectures", "Optimizers", "Metrics", "Features"] },
+    { week: 4, title: "Coding & Cases", hours: 10, tasks: ["From-scratch models", "ML system design", "A/B tests", "Mocks"] }
+  ]
+}
 
 const CHECKLIST_TEMPLATES = {
-  frontend: ["Review React lifecycle & hooks", "Practice 10 CSS layout challenges", "Build a component library", "Study browser rendering pipeline", "Read WCAG accessibility guidelines", "Complete 20 JS algorithm problems", "Review TypeScript handbook", "Mock 3 frontend interviews"],
-  backend: ["Design 3 REST APIs from scratch", "Practice SQL query optimization", "Implement JWT authentication", "Study database indexing", "Review OWASP Top 10", "Build a caching layer with Redis", "Write tests for existing APIs", "Mock 3 backend interviews"],
-  fullstack: ["Build end-to-end CRUD app", "Set up CI/CD pipeline", "Practice Docker containerization", "Review WebSocket implementation", "Study microservices patterns", "Complete integration test suite", "Deploy app to cloud", "Mock 3 fullstack interviews"],
-  dsa: ["Solve 50 LeetCode easy problems", "Solve 30 LeetCode medium problems", "Implement 10 data structures", "Study graph algorithms deeply", "Practice DP patterns daily", "Timed contest participation x5", "Review Big-O complexity guide", "Mock 3 OA tests"],
-  "system-design": ["Design URL shortener end-to-end", "Design social media feed system", "Study distributed systems paper", "Practice estimation problems", "Design payment processing system", "Review Netflix/Twitter architecture", "Whiteboard practice sessions x5", "Mock 3 design interviews"],
-  ml: ["Review linear algebra fundamentals", "Implement logistic regression", "Study backpropagation math", "Build ML pipeline end-to-end", "Practice feature engineering", "Study model evaluation metrics", "Implement a neural net from scratch", "Mock 3 ML interviews"],
-};
+  frontend: [
+    { text: "Review React lifecycle & hooks", difficulty: "Medium", mins: 40 },
+    { text: "Practice 10 CSS layout challenges", difficulty: "Easy", mins: 30 },
+    { text: "Build a component library", difficulty: "Hard", mins: 90 },
+    { text: "Study browser rendering pipeline", difficulty: "Medium", mins: 45 },
+    { text: "Read WCAG accessibility guidelines", difficulty: "Easy", mins: 25 },
+    { text: "Complete 20 JS algorithm problems", difficulty: "Hard", mins: 120 },
+    { text: "Review TypeScript handbook", difficulty: "Medium", mins: 50 },
+    { text: "Mock 3 frontend interviews", difficulty: "Hard", mins: 90 }
+  ],
+  backend: [
+    { text: "Design 3 REST APIs from scratch", difficulty: "Hard", mins: 90 },
+    { text: "Practice SQL query optimization", difficulty: "Medium", mins: 45 },
+    { text: "Implement JWT authentication", difficulty: "Medium", mins: 40 },
+    { text: "Study database indexing", difficulty: "Medium", mins: 35 },
+    { text: "Review OWASP Top 10", difficulty: "Easy", mins: 30 },
+    { text: "Build a caching layer with Redis", difficulty: "Hard", mins: 60 },
+    { text: "Write tests for existing APIs", difficulty: "Medium", mins: 50 },
+    { text: "Mock 3 backend interviews", difficulty: "Hard", mins: 90 }
+  ],
+  fullstack: [
+    { text: "Build end-to-end CRUD app", difficulty: "Hard", mins: 120 },
+    { text: "Set up CI/CD pipeline", difficulty: "Medium", mins: 45 },
+    { text: "Practice Docker containerization", difficulty: "Medium", mins: 40 },
+    { text: "Review WebSocket implementation", difficulty: "Medium", mins: 35 },
+    { text: "Study microservices patterns", difficulty: "Hard", mins: 50 },
+    { text: "Complete integration test suite", difficulty: "Hard", mins: 60 },
+    { text: "Deploy app to cloud", difficulty: "Medium", mins: 40 },
+    { text: "Mock 3 fullstack interviews", difficulty: "Hard", mins: 90 }
+  ],
+  dsa: [
+    { text: "Solve 50 LeetCode easy problems", difficulty: "Easy", mins: 200 },
+    { text: "Solve 30 LeetCode medium problems", difficulty: "Hard", mins: 300 },
+    { text: "Implement 10 data structures", difficulty: "Hard", mins: 120 },
+    { text: "Study graph algorithms deeply", difficulty: "Hard", mins: 90 },
+    { text: "Practice DP patterns daily", difficulty: "Hard", mins: 100 },
+    { text: "Timed contest participation x5", difficulty: "Hard", mins: 150 },
+    { text: "Review Big-O complexity guide", difficulty: "Easy", mins: 30 },
+    { text: "Mock 3 OA tests", difficulty: "Hard", mins: 90 }
+  ],
+  "system-design": [
+    { text: "Design URL shortener end-to-end", difficulty: "Hard", mins: 60 },
+    { text: "Design social media feed system", difficulty: "Hard", mins: 75 },
+    { text: "Study distributed systems paper", difficulty: "Hard", mins: 90 },
+    { text: "Practice estimation problems", difficulty: "Medium", mins: 40 },
+    { text: "Design payment processing system", difficulty: "Hard", mins: 75 },
+    { text: "Review Netflix/Twitter architecture", difficulty: "Medium", mins: 45 },
+    { text: "Whiteboard practice sessions x5", difficulty: "Hard", mins: 120 },
+    { text: "Mock 3 design interviews", difficulty: "Hard", mins: 90 }
+  ],
+  ml: [
+    { text: "Review linear algebra fundamentals", difficulty: "Medium", mins: 50 },
+    { text: "Implement logistic regression", difficulty: "Hard", mins: 60 },
+    { text: "Study backpropagation math", difficulty: "Hard", mins: 70 },
+    { text: "Build ML pipeline end-to-end", difficulty: "Hard", mins: 90 },
+    { text: "Practice feature engineering", difficulty: "Medium", mins: 45 },
+    { text: "Study model evaluation metrics", difficulty: "Easy", mins: 30 },
+    { text: "Implement a neural net from scratch", difficulty: "Hard", mins: 100 },
+    { text: "Mock 3 ML interviews", difficulty: "Hard", mins: 90 }
+  ]
+}
 
-// ─── Helper: normalize a note entry to always be { text, ts } ───────────────
-const normalizeNote = (note) => {
-  if (typeof note === "string") {
-    return { text: note, ts: "" };
-  }
-  return note;
-};
+const normalizeNote = (note) =>
+  typeof note === "string" ? { text: note, ts: "", pinned: false } : { pinned: false, ...note }
 
-const CSS = `
-  @keyframes ip-fadeSlide {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes ip-fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
+const getYTId = (url) => url?.match(/(?:v=|\.be\/|embed\/)([^&?/]+)/)?.[1] || ""
 
-  .ip-root { padding: 2rem 2.5rem; color: #e2e8f0; font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; box-sizing: border-box; }
-  .ip-page-header { margin-bottom: 2rem; }
-  .ip-eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #6366f1; background: #6366f115; border: 1px solid #6366f130; padding: 4px 12px; border-radius: 20px; margin-bottom: 0.875rem; }
-  .ip-page-title { font-size: 2rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.03em; line-height: 1.2; margin: 0 0 0.5rem; }
-  .ip-page-sub { font-size: 0.9rem; color: #64748b; max-width: 520px; line-height: 1.6; }
-  .ip-feature-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.1rem; }
-  .ip-feature-pill { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 500; color: #94a3b8; background: #161b27; border: 1px solid #1e2535; padding: 6px 14px; border-radius: 20px; transition: border-color 0.15s, color 0.15s; }
-  .ip-feature-pill:hover { border-color: #334155; color: #cbd5e1; }
-  .ip-section-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #475569; margin-bottom: 0.875rem; }
-  .ip-field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
-  .ip-field-card { background: #161b27; border: 1.5px solid #1e2535; border-radius: 12px; padding: 1rem; cursor: pointer; transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, opacity 0.25s ease; position: relative; }
-  .ip-field-card:hover { transform: translateY(-3px) scale(1.025); box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
-  .ip-field-card:active { transform: scale(0.975); }
-  .ip-field-card.ip-dimmed { opacity: 0.38; }
-  .ip-field-card.ip-dimmed:hover { opacity: 0.9; }
-  .ip-field-icon { font-size: 1.35rem; margin-bottom: 0.45rem; }
-  .ip-field-label { font-size: 0.8rem; font-weight: 600; color: #94a3b8; line-height: 1.3; }
-  .ip-field-label.ip-active-lbl { color: #fff; }
-  .ip-prog-bar { height: 3px; background: #1e2535; border-radius: 2px; margin-top: 0.5rem; overflow: hidden; }
-  .ip-prog-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
-  .ip-prog-pct { font-size: 0.62rem; margin-top: 0.25rem; }
-  .ip-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; animation: ip-fadeSlide 0.28s ease; }
-  .ip-stat-card { background: #161b27; border: 1px solid #1e2535; border-radius: 12px; padding: 1rem 1.25rem; text-align: center; transition: transform 0.18s ease, border-color 0.18s ease; }
-  .ip-stat-card:hover { transform: translateY(-2px); border-color: #243047; }
-  .ip-stat-num { font-size: 1.5rem; font-weight: 700; }
-  .ip-stat-lbl { font-size: 0.67rem; color: #64748b; margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.08em; }
-  .ip-panel { background: #161b27; border-radius: 16px; border: 1px solid #1e2535; overflow: hidden; animation: ip-fadeSlide 0.25s ease; }
-  .ip-panel-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #1e2535; display: flex; align-items: center; gap: 0.75rem; }
-  .ip-panel-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; }
-  .ip-panel-tags { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.3rem; }
-  .ip-panel-tag { font-size: 0.62rem; border-radius: 6px; padding: 2px 7px; font-weight: 600; }
-  .ip-tab-bar { display: flex; gap: 0.2rem; padding: 0.7rem 1.25rem; border-bottom: 1px solid #1e2535; overflow-x: auto; }
-  .ip-tab { padding: 0.38rem 1rem; border-radius: 20px; font-size: 0.775rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s ease; white-space: nowrap; background: transparent; color: #64748b; }
-  .ip-tab:hover { background: #1e2535; color: #94a3b8; }
-  .ip-tab.ip-tab-active { color: #fff; }
-  .ip-tab-body { padding: 1.5rem; animation: ip-fadeIn 0.2s ease; }
-  .ip-strat { background: #0f1117; border-radius: 12px; border: 1px solid #1e2535; padding: 1rem 1.125rem; margin-bottom: 0.625rem; transition: border-color 0.18s, transform 0.18s; }
-  .ip-strat:hover { border-color: #2a3352; transform: translateX(3px); }
-  .ip-strat-week { font-size: 0.63rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
-  .ip-strat-title { font-size: 0.875rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem; }
-  .ip-strat-tasks { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-  .ip-strat-task { font-size: 0.71rem; color: #94a3b8; background: #1a2035; border-radius: 6px; padding: 3px 8px; transition: background 0.15s, color 0.15s; cursor: default; }
-  .ip-strat-task:hover { background: #243047; color: #cbd5e1; }
-  .ip-tip { margin-top: 0.875rem; padding: 0.875rem 1rem; border-radius: 10px; border: 1px solid; }
-  .ip-tip-label { font-size: 0.73rem; font-weight: 700; margin-bottom: 0.3rem; }
-  .ip-tip-text { font-size: 0.775rem; color: #94a3b8; line-height: 1.6; }
-  .ip-video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.875rem; }
-  .ip-video-card { background: #0f1117; border-radius: 12px; border: 1.5px solid #1e2535; overflow: hidden; cursor: pointer; transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s; }
-  .ip-video-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.5); }
-  .ip-video-card.ip-watched { border-color: #16653450; }
-  .ip-video-thumb-wrap { position: relative; overflow: hidden; }
-  .ip-video-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; transition: opacity 0.18s, transform 0.22s; }
-  .ip-video-card:hover .ip-video-thumb { opacity: 0.82; transform: scale(1.03); }
-  .ip-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.72); border: none; border-radius: 50%; width: 38px; height: 38px; cursor: pointer; color: #fff; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; transition: background 0.15s, transform 0.15s; }
-  .ip-play-btn:hover { background: rgba(255,255,255,0.18); transform: translate(-50%,-50%) scale(1.12); }
-  .ip-video-info { padding: 0.7rem; }
-  .ip-video-title { font-size: 0.78rem; font-weight: 600; color: #e2e8f0; line-height: 1.4; margin-bottom: 0.4rem; }
-  .ip-video-meta { display: flex; align-items: center; justify-content: space-between; }
-  .ip-video-dur { font-size: 0.68rem; color: #64748b; }
-  .ip-watch-badge { font-size: 0.61rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; cursor: pointer; border: none; transition: transform 0.15s, opacity 0.15s; }
-  .ip-watch-badge:hover { transform: scale(1.06); opacity: 0.9; }
-  .ip-player { margin-bottom: 1.25rem; border-radius: 12px; overflow: hidden; background: #000; border: 1px solid #1e2535; animation: ip-fadeSlide 0.2s ease; }
-  .ip-player-bar { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: #161b27; }
-  .ip-player-close { background: none; border: none; color: #64748b; cursor: pointer; font-size: 1.05rem; transition: color 0.15s; }
-  .ip-player-close:hover { color: #e2e8f0; }
-  .ip-player-frame { position: relative; padding-top: 56.25%; }
-  .ip-player-frame iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-  .ip-check-prog-wrap { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-  .ip-check-prog-track { flex: 1; background: #0f1117; border-radius: 6px; height: 5px; overflow: hidden; }
-  .ip-check-prog-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
-  .ip-check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
-  .ip-check-item { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.65rem 0.875rem; border-radius: 10px; cursor: pointer; border: 1px solid; transition: background 0.15s, border-color 0.15s, transform 0.15s; }
-  .ip-check-item:hover { transform: translateX(2px); }
-  .ip-check-item.ip-done { background: #052e16; border-color: #16653450; }
-  .ip-check-item.ip-undone { background: #0f1117; border-color: #1e2535; }
-  .ip-check-item.ip-undone:hover { border-color: #2a3352; }
-  .ip-checkbox { width: 15px; height: 15px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; border: 2px solid; transition: all 0.15s; }
-  .ip-check-text { font-size: 0.775rem; line-height: 1.4; }
-  .ip-note-area { display: flex; flex-direction: column; gap: 0.875rem; }
-  .ip-note-input { width: 100%; padding: 0.75rem 1rem; background: #0f1117; border: 1px solid #1e2535; border-radius: 10px; color: #e2e8f0; font-size: 0.875rem; resize: vertical; min-height: 80px; font-family: inherit; box-sizing: border-box; transition: border-color 0.15s; }
-  .ip-note-input:focus { outline: none; border-color: #334155; }
-  .ip-note-btn { padding: 0.45rem 1.25rem; border: none; border-radius: 8px; color: #fff; font-weight: 600; font-size: 0.8rem; cursor: pointer; margin-top: 0.5rem; transition: opacity 0.15s, transform 0.15s; }
-  .ip-note-btn:hover { opacity: 0.85; transform: scale(0.98); }
-  .ip-note-item { background: #0f1117; border-radius: 10px; border: 1px solid #1e2535; padding: 0.875rem 1rem; animation: ip-fadeSlide 0.2s ease; transition: border-color 0.15s; }
-  .ip-note-item:hover { border-color: #2a3352; }
-  .ip-note-del { float: right; background: none; border: none; color: #475569; cursor: pointer; transition: color 0.15s; font-size: 1rem; }
-  .ip-note-del:hover { color: #94a3b8; }
-  .ip-empty { text-align: center; padding: 3rem 1rem; color: #475569; animation: ip-fadeIn 0.3s ease; }
-`;
+const DIFF_COLOR = {
+  Easy: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  Medium: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+  Hard: "text-rose-400 bg-rose-500/10 border-rose-500/20",
+  Beginner: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  Intermediate: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+  Advanced: "text-rose-400 bg-rose-500/10 border-rose-500/20"
+}
+
+const TABS = [
+  { id: "strategy", label: "Roadmap", icon: BookOpen },
+  { id: "checklist", label: "Checklist", icon: ListChecks },
+  { id: "videos", label: "Videos", icon: Video },
+  { id: "notes", label: "Notes", icon: StickyNote }
+]
+
+function ProgressRing({ value, size = 72, stroke = 6, color = ACCENT }) {
+  const r = (size - stroke) / 2
+  const c = 2 * Math.PI * r
+  const offset = c * (1 - Math.min(100, Math.max(0, value)) / 100)
+  return (
+    <svg width={size} height={size} className="-rotate-90 shrink-0">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={stroke} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth={stroke}
+        strokeDasharray={c}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1)" }}
+      />
+    </svg>
+  )
+}
 
 export default function InterviewPrepHub() {
-  const [selectedField, setSelectedField] = useState(null);
-  const [activeTab, setActiveTab] = useState("strategy");
-  const [playingVideo, setPlayingVideo] = useState(null);
-  const [noteInput, setNoteInput] = useState("");
+  const [selectedField, setSelectedField] = useState(null)
+  const [activeTab, setActiveTab] = useState("strategy")
+  const [playingVideo, setPlayingVideo] = useState(null)
+  const [noteInput, setNoteInput] = useState("")
+  const [expandedWeek, setExpandedWeek] = useState(null)
+  const [videoFilter, setVideoFilter] = useState("All")
+  const [videoSearch, setVideoSearch] = useState("")
+  const [noteSearch, setNoteSearch] = useState("")
+  const [noteSort, setNoteSort] = useState("newest")
 
-  // Connect to custom DB syncing hook directly
   const {
     notes,
     checklist,
@@ -221,277 +237,576 @@ export default function InterviewPrepHub() {
     deleteNote: triggerDeleteNote,
     toggleChecklist,
     toggleWatchedVideo
-  } = usePrepProgress(selectedField);
+  } = usePrepProgress(selectedField)
 
-  const field = FIELDS.find((f) => f.id === selectedField);
-  const resources = selectedField ? RESOURCES[selectedField] || [] : [];
-  const strategies = selectedField ? STRATEGIES[selectedField] || [] : [];
-  const checkItems = selectedField ? CHECKLIST_TEMPLATES[selectedField] || [] : [];
+  const field = FIELDS.find((f) => f.id === selectedField)
+  const resources = selectedField ? RESOURCES[selectedField] || [] : []
+  const strategies = selectedField ? STRATEGIES[selectedField] || [] : []
+  const checkMeta = selectedField ? CHECKLIST_TEMPLATES[selectedField] || [] : []
+
+  const checklistArr = Array.isArray(checklist) ? checklist : checklist?.[selectedField] || []
+  const notesArr = (Array.isArray(notes) ? notes : notes?.[selectedField] || []).map(normalizeNote)
+  const watchedArr = Array.isArray(watchedVideos) ? watchedVideos : watchedVideos?.[selectedField] || []
+
+  const tasksDone = checklistArr.filter(Boolean).length
+  const tasksTotal = checkMeta.length || 1
+  const checklistPct = Math.round((tasksDone / tasksTotal) * 100)
+  const videosDone = watchedArr.length
+  const videosTotal = resources.length || 1
+  const videoPct = Math.round((videosDone / videosTotal) * 100)
+  const overallPct = Math.round(checklistPct * 0.5 + videoPct * 0.35 + (notesArr.length > 0 ? 15 : 0))
+
+  const currentWeekIdx = useMemo(() => {
+    if (!checkMeta.length) return 0
+    const perWeek = Math.ceil(checkMeta.length / 4)
+    for (let w = 0; w < 4; w++) {
+      const slice = checklistArr.slice(w * perWeek, (w + 1) * perWeek)
+      if (slice.some((x) => !x) || slice.length < perWeek) return w
+    }
+    return 3
+  }, [checklistArr, checkMeta.length])
+
+  const currentStrategy = strategies[currentWeekIdx] || strategies[0]
+  const weeksLeft = Math.max(0, 4 - currentWeekIdx - (checklistPct === 100 ? 1 : 0))
 
   useEffect(() => {
-    setPlayingVideo(null);
-  }, [activeTab]);
+    setPlayingVideo(null)
+  }, [activeTab, selectedField])
+
+  useEffect(() => {
+    if (selectedField != null) setExpandedWeek(currentWeekIdx)
+  }, [selectedField, currentWeekIdx])
 
   const handleAddNote = () => {
-    if (!noteInput.trim() || !selectedField) return;
-    triggerAddNote(noteInput.trim());
-    setNoteInput("");
-  };
+    if (!noteInput.trim() || !selectedField) return
+    triggerAddNote(noteInput.trim())
+    setNoteInput("")
+  }
 
-  // FIX 2: Safe checklist access — checklist[fid] could be undefined or not an array
-  const getProgress = (fid) => {
-    const items = CHECKLIST_TEMPLATES[fid] || [];
-    if (!items.length) return 0;
-    const checks = Array.isArray(checklist?.[fid]) ? checklist[fid] : [];
-    return Math.round((checks.filter(Boolean).length / items.length) * 100);
-  };
+  const goContinue = () => {
+    if (!selectedField) {
+      setSelectedField("frontend")
+    }
+    setActiveTab("strategy")
+    const week = typeof currentWeekIdx === "number" ? currentWeekIdx : 0
+    setExpandedWeek(week)
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        document.getElementById("prep-workspace")?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }, 80)
+    })
+  }
 
-  const getVideoProgress = (fid) => {
-    const total = (RESOURCES[fid] || []).length;
-    const watched = watchedVideos?.[fid] || [];
-    return total ? Math.round((watched.length / total) * 100) : 0;
-  };
+  const filteredVideos = resources.filter((v) => {
+    const matchLevel = videoFilter === "All" || v.level === videoFilter
+    const matchQ = !videoSearch || v.title.toLowerCase().includes(videoSearch.toLowerCase())
+    return matchLevel && matchQ
+  })
 
-  const getYTId = (url) => url?.match(/(?:v=|\.be\/|embed\/)([^&?/]+)/)?.[1] || "";
+  const sortedNotes = [...notesArr]
+    .filter((n) => !noteSearch || n.text.toLowerCase().includes(noteSearch.toLowerCase()))
+    .sort((a, b) => {
+      if (noteSort === "pinned") return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0)
+      return 0
+    })
+
+  const FieldIcon = field?.icon
+  const accent = field?.color || ACCENT
 
   return (
-    <>
-      <style>{CSS}</style>
-      <div className="ip-root">
-
-        {/* Page header */}
-        <div className="ip-page-header">
-          <div className="ip-eyebrow">📖 Interview Preparation</div>
-          <h1 className="ip-page-title">Notes, playlists &amp; interview learning.</h1>
-          <p className="ip-page-sub">
-            Pick your target field, follow the 4-week strategy, watch curated videos, tick off your prep checklist, and capture notes — all in one place.
-          </p>
-          <div className="ip-feature-row">
-            {["🗺️ 4-week strategy", "▶️ Curated YouTube resources", "✅ Prep checklist", "📝 Notes workspace"].map((p) => (
-              <span key={p} className="ip-feature-pill">{p}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* Field selection */}
-        <div className="ip-section-label">Choose your field</div>
-        <div className="ip-field-grid">
+    <div className="space-y-8 pb-16 max-w-6xl">
+      {/* Field selector */}
+      <section>
+        <p className="text-[11px] font-medium tracking-widest uppercase text-white/30 mb-4">Learning path</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {FIELDS.map((f) => {
-            const active = selectedField === f.id;
-            const dimmed = selectedField && !active;
-            const prog = getProgress(f.id);
+            const active = selectedField === f.id
+            const Icon = f.icon
+            const pct = active ? overallPct : 0
             return (
-              <div
+              <button
                 key={f.id}
-                className={`ip-field-card${dimmed ? " ip-dimmed" : ""}`}
-                style={{ background: active ? `${f.color}20` : "#161b27", borderColor: active ? f.color : "#1e2535" }}
-                onClick={() => { setSelectedField(active ? null : f.id); setActiveTab("strategy"); setPlayingVideo(null); }}
+                onClick={() => {
+                  setSelectedField(active ? null : f.id)
+                  setActiveTab("strategy")
+                }}
+                className={`group relative text-left rounded-2xl p-4 border transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#7C6BFF]/60 ${
+                  active
+                    ? "bg-white/[0.04] border-[#7C6BFF]/40 shadow-[0_0_0_1px_rgba(124,107,255,0.15),0_8px_32px_rgba(124,107,255,0.12)]"
+                    : "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]"
+                }`}
               >
-                <div className="ip-field-icon">{f.icon}</div>
-                <div className={`ip-field-label${active ? " ip-active-lbl" : ""}`}>{f.label}</div>
-                <div className="ip-prog-bar">
-                  <div className="ip-prog-fill" style={{ width: `${prog}%`, background: f.color }} />
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 transition"
+                  style={{
+                    background: active ? `${f.color}22` : "rgba(255,255,255,0.04)",
+                    color: active ? f.color : "rgba(255,255,255,0.45)"
+                  }}
+                >
+                  <Icon className="w-4.5 h-4.5" strokeWidth={1.75} />
                 </div>
-                {prog > 0 && <div className="ip-prog-pct" style={{ color: active ? f.color : "#475569" }}>{prog}% done</div>}
-              </div>
-            );
+                <div className={`text-[13px] font-medium leading-snug mb-3 ${active ? "text-white" : "text-white/50 group-hover:text-white/70"}`}>
+                  {f.label}
+                </div>
+                <div className="h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: f.color }} />
+                </div>
+                {active && (
+                  <div className="text-[10px] mt-2 font-medium tabular-nums" style={{ color: f.color }}>
+                    {pct}% complete
+                  </div>
+                )}
+              </button>
+            )
           })}
         </div>
+      </section>
 
-        {/* Loading Indicator for DB state Sync */}
-        {loadingProgress && <div style={{ color: field ? field.color : "#6366f1", marginBottom: "1rem" }}>Syncing progress...</div>}
+      {loadingProgress && (
+        <div className="flex items-center gap-2 text-sm text-white/40">
+          <Loader2 className="w-4 h-4 animate-spin" /> Syncing…
+        </div>
+      )}
 
-        {/* Stats + panel */}
-        {selectedField && field && !loadingProgress && (
-          <>
-            <div className="ip-stats-row">
-              {[
-                { num: `${getProgress(selectedField)}%`, lbl: "Checklist" },
-                { num: `${getVideoProgress(selectedField)}%`, lbl: "Videos watched" },
-                { num: (notes?.[selectedField] || []).length, lbl: "Notes saved" },
-              ].map((s) => (
-                <div key={s.lbl} className="ip-stat-card">
-                  <div className="ip-stat-num" style={{ color: field.color }}>{s.num}</div>
-                  <div className="ip-stat-lbl">{s.lbl}</div>
+      {!selectedField && !loadingProgress && (
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-8 py-16 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4 text-white/30">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <p className="text-white/80 font-medium mb-1">Select a learning path</p>
+          <p className="text-sm text-white/35 max-w-sm mx-auto">
+            Choose a field above to open your roadmap, checklist, videos and notes.
+          </p>
+        </div>
+      )}
+
+      {selectedField && field && !loadingProgress && (
+        <>
+          {/* Hero */}
+          <section className="rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.04] to-transparent p-6 md:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${accent}20`, color: accent }}>
+                    {FieldIcon && <FieldIcon className="w-5 h-5" strokeWidth={1.75} />}
+                  </div>
+                  <div>
+                    <h1 className="text-xl md:text-2xl font-semibold text-white tracking-tight">{field.label}</h1>
+                    <p className="text-[12px] text-white/35 mt-0.5">{field.tags.join(" · ")}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="ip-panel">
-              {/* Header */}
-              <div className="ip-panel-header" style={{ background: `${field.color}0e` }}>
-                <span style={{ fontSize: "1.3rem" }}>{field.icon}</span>
-                <div>
-                  <div className="ip-panel-title">{field.label}</div>
-                  <div className="ip-panel-tags">
-                    {field.tags.map((t) => (
-                      <span key={t} className="ip-panel-tag" style={{ background: `${field.color}1a`, color: field.color }}>{t}</span>
-                    ))}
+                <div className="mt-5 space-y-2">
+                  <div className="flex items-center justify-between text-[12px]">
+                    <span className="text-white/40">Overall progress</span>
+                    <span className="font-medium tabular-nums text-white/70">{overallPct}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${overallPct}%`, background: accent }} />
+                  </div>
+                </div>
+
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12px]">
+                  <div>
+                    <div className="text-white/30 mb-0.5">Resume from</div>
+                    <div className="text-white/80 font-medium">Week {currentWeekIdx + 1}</div>
+                  </div>
+                  <div>
+                    <div className="text-white/30 mb-0.5">Current topic</div>
+                    <div className="text-white/80 font-medium truncate">
+                      {currentStrategy?.tasks?.[0]?.split(",")[0] || currentStrategy?.title || "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-white/30 mb-0.5">Est. remaining</div>
+                    <div className="text-white/80 font-medium">
+                      {weeksLeft} week{weeksLeft !== 1 ? "s" : ""}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-white/30 mb-0.5">Tasks done</div>
+                    <div className="text-white/80 font-medium tabular-nums">
+                      {tasksDone}/{tasksTotal}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Tabs */}
-              <div className="ip-tab-bar">
+              <button
+                type="button"
+                onClick={goContinue}
+                className="shrink-0 inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl text-sm font-medium text-white transition hover:brightness-110 active:scale-[0.98]"
+                style={{ background: ACCENT, boxShadow: `0 0 0 1px ${ACCENT}55, 0 8px 24px ${ACCENT}33` }}
+              >
+                Continue learning
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </section>
+
+          {/* Continue strip */}
+          <section className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-[#7C6BFF]/15 text-[#7C6BFF] flex items-center justify-center shrink-0">
+                <Play className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] text-white/30 uppercase tracking-wider font-medium">Continue where you left off</p>
+                <p className="text-sm text-white/85 font-medium truncate mt-0.5">
+                  Week {currentWeekIdx + 1} · {currentStrategy?.title || "Getting started"}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={goContinue}
+              className="shrink-0 h-9 px-4 rounded-lg text-[13px] font-medium border border-white/[0.1] text-white/70 hover:text-white hover:border-white/20 hover:bg-white/[0.04] transition"
+            >
+              Resume
+            </button>
+          </section>
+
+          {/* Progress overview */}
+          <section className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+              <div className="relative flex items-center justify-center">
+                <ProgressRing value={overallPct} size={80} stroke={7} color={accent} />
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-lg font-semibold text-white tabular-nums">{overallPct}%</span>
+                </div>
+              </div>
+              <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { id: "strategy",  label: "📋 4-Week Strategy" },
-                  { id: "videos",    label: "▶️ Video Resources" },
-                  { id: "checklist", label: "✅ Prep Checklist" },
-                  { id: "notes",     label: "📝 My Notes" },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    className={`ip-tab${activeTab === t.id ? " ip-tab-active" : ""}`}
-                    style={activeTab === t.id ? { background: field.color, color: "#fff" } : {}}
-                    onClick={() => setActiveTab(t.id)}
-                  >
-                    {t.label}
-                  </button>
+                  { label: "Tasks completed", value: `${tasksDone}/${tasksTotal}` },
+                  { label: "Videos watched", value: `${videosDone}/${videosTotal}` },
+                  { label: "Notes created", value: notesArr.length },
+                  { label: "Current week", value: `Week ${currentWeekIdx + 1}` }
+                ].map((s) => (
+                  <div key={s.label}>
+                    <div className="text-[11px] text-white/30 mb-1">{s.label}</div>
+                    <div className="text-[15px] font-medium text-white/90 tabular-nums">{s.value}</div>
+                  </div>
                 ))}
               </div>
-
-              <div className="ip-tab-body">
-
-                {/* Strategy */}
-                {activeTab === "strategy" && (
-                  <div>
-                    {strategies.map((s) => (
-                      <div key={s.week} className="ip-strat">
-                        <div className="ip-strat-week" style={{ color: field.color }}>Week {s.week}</div>
-                        <div className="ip-strat-title"><span>{s.icon}</span>{s.title}</div>
-                        <div className="ip-strat-tasks">
-                          {s.tasks.map((task) => <span key={task} className="ip-strat-task">{task}</span>)}
-                        </div>
-                      </div>
-                    ))}
-                    <div className="ip-tip" style={{ background: `${field.color}0d`, borderColor: `${field.color}2a` }}>
-                      <div className="ip-tip-label" style={{ color: field.color }}>💡 Pro tip</div>
-                      <div className="ip-tip-text">Spend 2–3 focused hours daily. Consistency beats cramming. Revisit weak topics after each mock session.</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Videos */}
-                {activeTab === "videos" && (
-                  <div>
-                    {playingVideo !== null && (
-                      <div className="ip-player">
-                        <div className="ip-player-bar">
-                          <span style={{ fontSize: "0.77rem", color: "#94a3b8" }}>{resources[playingVideo]?.title}</span>
-                          <button className="ip-player-close" onClick={() => setPlayingVideo(null)}>✕</button>
-                        </div>
-                        <div className="ip-player-frame">
-                          <iframe
-                            src={`https://www.youtube.com/embed/${getYTId(resources[playingVideo]?.url)}?autoplay=1`}
-                            allowFullScreen allow="autoplay"
-                            title={resources[playingVideo]?.title}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    <div className="ip-video-grid">
-                      {resources.map((v, i) => {
-                        const watched = (watchedVideos?.[selectedField] || []).includes(i);
-                        return (
-                          <div key={i} className={`ip-video-card${watched ? " ip-watched" : ""}`}>
-                            <div className="ip-video-thumb-wrap">
-                              <img src={v.thumb} alt={v.title} className="ip-video-thumb" onError={(e) => { e.target.style.display = "none"; }} />
-                              <button className="ip-play-btn" onClick={() => setPlayingVideo(i)} aria-label="Play">▶</button>
-                            </div>
-                            <div className="ip-video-info">
-                              <div className="ip-video-title">{v.title}</div>
-                              <div className="ip-video-meta">
-                                <span className="ip-video-dur">{v.duration}</span>
-                                <button
-                                  className="ip-watch-badge"
-                                  style={{ background: watched ? "#14532d" : "#1e2535", color: watched ? "#4ade80" : "#94a3b8" }}
-                                  onClick={(e) => { e.stopPropagation(); toggleWatchedVideo(i); }}
-                                >
-                                  {watched ? "✓ Watched" : "Mark Watched"}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Checklist */}
-                {activeTab === "checklist" && (
-                  <div>
-                    <div className="ip-check-prog-wrap">
-                      <div className="ip-check-prog-track">
-                        <div className="ip-check-prog-fill" style={{ width: `${getProgress(selectedField)}%`, background: field.color }} />
-                      </div>
-                      <span style={{ fontSize: "0.8rem", color: field.color, fontWeight: "600" }}>{getProgress(selectedField)}% complete</span>
-                    </div>
-                    <div className="ip-check-grid">
-                      {checkItems.map((item, idx) => {
-                        const isDone = !!(checklist?.[selectedField]?.[idx]);
-                        return (
-                          <div
-                            key={idx}
-                            className={`ip-check-item ${isDone ? "ip-done" : "ip-undone"}`}
-                            onClick={() => toggleChecklist(idx)}
-                          >
-                            <div className="ip-checkbox" style={{ borderColor: isDone ? "#4ade80" : "#334155", background: isDone ? "#22c55e" : "transparent" }}>
-                              {isDone && "✓"}
-                            </div>
-                            <span className="ip-check-text" style={{ color: isDone ? "#cbd5e1" : "#94a3b8", textDecoration: isDone ? "line-through" : "none" }}>{item}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Notes */}
-                {activeTab === "notes" && (
-                  <div className="ip-note-area">
-                    <div>
-                      <textarea
-                        className="ip-note-input"
-                        placeholder={`Take an interview note for ${field.label}...`}
-                        value={noteInput}
-                        onChange={(e) => setNoteInput(e.target.value)}
-                      />
-                      <button className="ip-note-btn" style={{ background: field.color }} onClick={handleAddNote}>
-                        Save Note
-                      </button>
-                    </div>
-                    <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      {(notes?.[selectedField] || []).length === 0 ? (
-                        <div className="ip-empty">No notes saved yet for this topic.</div>
-                      ) : (
-                        // FIX 1: Normalize each note — handle both plain strings and {text, ts} objects
-                        (notes[selectedField]).map((rawNote, index) => {
-                          const note = normalizeNote(rawNote);
-                          return (
-                            <div key={index} className="ip-note-item">
-                              <button className="ip-note-del" onClick={() => triggerDeleteNote(index)}>✕</button>
-                              <div style={{ fontSize: "0.875rem", color: "#f1f5f9", whiteSpace: "pre-wrap" }}>
-                                {note.text}
-                              </div>
-                              {note.ts && (
-                                <div style={{ fontSize: "0.68rem", color: "#475569", marginTop: "0.5rem" }}>
-                                  {note.ts}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                )}
-
-              </div>
             </div>
-          </>
-        )}
-      </div>
-    </>
-  );
+          </section>
+
+          {/* Tabs + content — THIS is prep-workspace */}
+          <section
+            id="prep-workspace"
+            className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden scroll-mt-24"
+          >
+            <div className="relative flex border-b border-white/[0.06] px-2 overflow-x-auto">
+              {TABS.map((t) => {
+                const Icon = t.icon
+                const on = activeTab === t.id
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setActiveTab(t.id)}
+                    className={`relative flex items-center gap-2 px-4 py-3.5 text-[13px] font-medium whitespace-nowrap transition ${
+                      on ? "text-white" : "text-white/35 hover:text-white/60"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" strokeWidth={1.75} />
+                    {t.label}
+                    {on && (
+                      <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full" style={{ background: ACCENT }} />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="p-5 md:p-6">
+              {activeTab === "strategy" && (
+                <div className="relative space-y-0">
+                  <div className="absolute left-[15px] top-3 bottom-3 w-px bg-white/[0.06]" />
+                  {strategies.map((s, idx) => {
+                    const done = idx < currentWeekIdx
+                    const current = idx === currentWeekIdx
+                    const open = expandedWeek === idx
+                    return (
+                      <div key={s.week} className="relative pl-10 pb-5 last:pb-0">
+                        <div
+                          className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold border z-10 ${
+                            done
+                              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+                              : current
+                              ? "border-[#7C6BFF]/50 text-[#7C6BFF] bg-[#7C6BFF]/15"
+                              : "bg-white/[0.03] border-white/[0.08] text-white/30"
+                          }`}
+                        >
+                          {done ? <CheckCircle2 className="w-4 h-4" /> : s.week}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setExpandedWeek(open ? null : idx)}
+                          className={`w-full text-left rounded-xl border p-4 transition ${
+                            open ? "bg-white/[0.03] border-white/[0.1]" : "bg-transparent border-transparent hover:bg-white/[0.02]"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Week {s.week}</span>
+                                {current && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#7C6BFF]/15 text-[#7C6BFF] font-medium">Current</span>
+                                )}
+                                {done && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium">Done</span>
+                                )}
+                              </div>
+                              <div className="text-[14px] font-medium text-white/90 mt-1">{s.title}</div>
+                            </div>
+                            <div className="text-[12px] text-white/30 flex items-center gap-1 shrink-0">
+                              <Clock className="w-3 h-3" /> ~{s.hours}h
+                            </div>
+                          </div>
+                          {open && (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {s.tasks.map((task) => (
+                                <span
+                                  key={task}
+                                  className="text-[12px] text-white/50 bg-white/[0.04] border border-white/[0.06] rounded-lg px-2.5 py-1"
+                                >
+                                  {task}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {activeTab === "checklist" && (
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <div className="text-[13px] text-white/50">Week progress</div>
+                      <div className="text-lg font-semibold text-white tabular-nums mt-0.5">{checklistPct}%</div>
+                    </div>
+                    <div className="w-32 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${checklistPct}%`, background: accent }} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {checkMeta.map((item, idx) => {
+                      const done = !!checklistArr[idx]
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => toggleChecklist(idx)}
+                          className={`w-full flex items-center gap-3.5 rounded-xl border px-4 py-3.5 text-left transition ${
+                            done
+                              ? "bg-emerald-500/[0.06] border-emerald-500/15"
+                              : "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.1] hover:bg-white/[0.03]"
+                          }`}
+                        >
+                          {done ? (
+                            <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                          ) : (
+                            <Circle className="w-4.5 h-4.5 text-white/20 shrink-0" />
+                          )}
+                          <span className={`flex-1 text-[13px] ${done ? "text-white/40 line-through" : "text-white/80"}`}>
+                            {item.text}
+                          </span>
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md border ${DIFF_COLOR[item.difficulty] || DIFF_COLOR.Medium}`}>
+                            {item.difficulty}
+                          </span>
+                          <span className="text-[11px] text-white/25 tabular-nums w-12 text-right shrink-0">{item.mins}m</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "videos" && (
+                <div>
+                  <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                    <div className="relative flex-1">
+                      <Search className="w-3.5 h-3.5 text-white/25 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        value={videoSearch}
+                        onChange={(e) => setVideoSearch(e.target.value)}
+                        placeholder="Search videos…"
+                        className="w-full h-9 rounded-lg bg-white/[0.03] border border-white/[0.08] pl-9 pr-3 text-[13px] text-white placeholder:text-white/25 outline-none focus:border-[#7C6BFF]/40"
+                      />
+                    </div>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {["All", "Beginner", "Intermediate", "Advanced"].map((f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => setVideoFilter(f)}
+                          className={`h-9 px-3 rounded-lg text-[12px] font-medium transition border ${
+                            videoFilter === f
+                              ? "bg-[#7C6BFF]/15 border-[#7C6BFF]/30 text-[#7C6BFF]"
+                              : "bg-transparent border-white/[0.06] text-white/35 hover:text-white/60"
+                          }`}
+                        >
+                          {f}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {playingVideo !== null && resources[playingVideo] && (
+                    <div className="mb-5 rounded-xl overflow-hidden border border-white/[0.08] bg-black">
+                      <div className="flex items-center justify-between px-3 py-2 bg-white/[0.03] border-b border-white/[0.06]">
+                        <span className="text-[12px] text-white/50 truncate">{resources[playingVideo].title}</span>
+                        <button type="button" onClick={() => setPlayingVideo(null)} className="p-1 text-white/30 hover:text-white">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="relative pt-[56.25%]">
+                        <iframe
+                          className="absolute inset-0 w-full h-full"
+                          src={`https://www.youtube.com/embed/${getYTId(resources[playingVideo].url)}?autoplay=1`}
+                          allow="autoplay; fullscreen"
+                          allowFullScreen
+                          title={resources[playingVideo].title}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {filteredVideos.map((v) => {
+                      const i = resources.indexOf(v)
+                      const watched = watchedArr.includes(i)
+                      return (
+                        <div
+                          key={i}
+                          className={`rounded-xl border overflow-hidden transition hover:-translate-y-0.5 ${
+                            watched
+                              ? "border-emerald-500/20 bg-emerald-500/[0.03]"
+                              : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.1]"
+                          }`}
+                        >
+                          <div className="relative aspect-video bg-black/40 group">
+                            <img
+                              src={v.thumb}
+                              alt=""
+                              className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition"
+                              onError={(e) => {
+                                e.target.style.display = "none"
+                              }}
+                            />
+                            <button type="button" onClick={() => setPlayingVideo(i)} className="absolute inset-0 flex items-center justify-center">
+                              <span className="w-10 h-10 rounded-full bg-black/60 border border-white/15 flex items-center justify-center text-white hover:bg-[#7C6BFF]/90 transition">
+                                <Play className="w-3.5 h-3.5 ml-0.5" />
+                              </span>
+                            </button>
+                            {watched && (
+                              <span className="absolute top-2 right-2 text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/90 text-white">
+                                Done
+                              </span>
+                            )}
+                          </div>
+                          <div className="p-3">
+                            <div className="text-[12px] font-medium text-white/80 leading-snug line-clamp-2 mb-2">{v.title}</div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-[10px] text-white/30">{v.duration}</span>
+                              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${DIFF_COLOR[v.level] || ""}`}>
+                                {v.level}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => toggleWatchedVideo(i)}
+                              className="mt-2.5 w-full h-7 rounded-lg text-[11px] font-medium border border-white/[0.08] text-white/40 hover:text-white/70 hover:border-white/15 transition"
+                            >
+                              {watched ? "Mark unwatched" : "Mark watched"}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {filteredVideos.length === 0 && (
+                    <p className="text-center text-sm text-white/30 py-10">No videos match your filters.</p>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "notes" && (
+                <div>
+                  <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                    <div className="relative flex-1">
+                      <Search className="w-3.5 h-3.5 text-white/25 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        value={noteSearch}
+                        onChange={(e) => setNoteSearch(e.target.value)}
+                        placeholder="Search notes…"
+                        className="w-full h-9 rounded-lg bg-white/[0.03] border border-white/[0.08] pl-9 pr-3 text-[13px] text-white placeholder:text-white/25 outline-none focus:border-[#7C6BFF]/40"
+                      />
+                    </div>
+                    <select
+                      value={noteSort}
+                      onChange={(e) => setNoteSort(e.target.value)}
+                      className="h-9 rounded-lg bg-white/[0.03] border border-white/[0.08] px-3 text-[12px] text-white/60 outline-none"
+                    >
+                      <option value="newest">Newest</option>
+                      <option value="oldest">Oldest</option>
+                      <option value="pinned">Pinned first</option>
+                    </select>
+                  </div>
+
+                  <div className="mb-4">
+                    <textarea
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                      placeholder="Capture a learning note…"
+                      className="w-full min-h-[88px] rounded-xl bg-white/[0.03] border border-white/[0.08] px-4 py-3 text-[13px] text-white placeholder:text-white/25 outline-none focus:border-[#7C6BFF]/40 resize-y"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddNote}
+                      disabled={!noteInput.trim()}
+                      className="mt-2 h-9 px-4 rounded-lg text-[13px] font-medium text-white disabled:opacity-40 transition hover:brightness-110"
+                      style={{ background: ACCENT }}
+                    >
+                      Save note
+                    </button>
+                  </div>
+
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {sortedNotes.length === 0 ? (
+                      <p className="col-span-2 text-center text-sm text-white/30 py-12">No notes yet.</p>
+                    ) : (
+                      sortedNotes.map((note, index) => (
+                        <div
+                          key={index}
+                          className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:border-white/[0.1] transition group"
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <p className="text-[13px] text-white/80 leading-relaxed line-clamp-4 flex-1 whitespace-pre-wrap">{note.text}</p>
+                            <button
+                              type="button"
+                              onClick={() => triggerDeleteNote(index)}
+                              className="opacity-0 group-hover:opacity-100 text-white/25 hover:text-rose-400 transition p-0.5"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          {note.ts && <div className="text-[10px] text-white/25">{note.ts}</div>}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        </>
+      )}
+    </div>
+  )
 }

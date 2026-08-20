@@ -40,47 +40,42 @@ function Signup() {
         password,
       })
 
-      // Backend returns strings like "User Already Exists" or "Signup Successful"
-     if (res.data.message === "Signup successful.") {
-  setSuccess("Account created successfully! Redirecting to sign in...")
-
-  setTimeout(() => {
-    navigate("/")
-  }, 2200)
-} else {
-  setError(res.data.error || "Registration failed")
-}
-    }catch (err) {
-  console.error(err)
-
-  setError(
-    err.response?.data?.error ||
-    "Unable to connect to server. Please try again later."
-  )
-}finally {
+      if (res.data.message === "Signup successful.") {
+        setSuccess("Account created successfully! Redirecting to sign in...")
+        setTimeout(() => {
+          navigate("/signin")
+        }, 2200)
+      } else {
+        setError(res.data.error || "Registration failed")
+      }
+    } catch (err) {
+      console.error(err)
+      setError(
+        err.response?.data?.error ||
+          "Unable to connect to server. Please try again later."
+      )
+    } finally {
       setLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-brand-bg text-white flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* FLOATING AMBIENT GLOWS */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none animate-float"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none animate-pulse-slow"></div>
 
       <div className="w-full max-w-md z-10">
-        {/* LOGO & HERO HEADLINE */}
-        <div className="flex flex-col items-center mb-6 text-center">
-          <div className="p-3 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl shadow-xl shadow-indigo-500/25 mb-4 animate-float">
+        {/* Logo → home */}
+        <Link to="/" className="flex flex-col items-center mb-6 text-center group">
+          <div className="p-3 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl shadow-xl shadow-indigo-500/25 mb-4 transition group-hover:scale-105">
             <Bot className="w-8 h-8 text-white" />
           </div>
           <h1 className="font-display text-4xl font-extrabold tracking-tight text-white">
             Interview<span className="text-indigo-400">AI</span>
           </h1>
           <p className="text-gray-400 text-sm mt-2">Create an account to start your training</p>
-        </div>
+        </Link>
 
-        {/* SIGNUP CARD */}
         <div className="glass-panel rounded-3xl p-8 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-emerald-500"></div>
 
@@ -101,9 +96,10 @@ function Signup() {
           )}
 
           <form onSubmit={handleSignup} className="space-y-4">
-            {/* NAME INPUT */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Full Name</label>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Full Name
+              </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500">
                   <User className="w-5 h-5" />
@@ -114,13 +110,15 @@ function Signup() {
                   value={name}
                   className="w-full pl-11 pr-4 py-3 bg-gray-900/60 border border-gray-800 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-gray-600 transition"
                   onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
                 />
               </div>
             </div>
 
-            {/* EMAIL INPUT */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Email Address</label>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Email Address
+              </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500">
                   <Mail className="w-5 h-5" />
@@ -131,13 +129,15 @@ function Signup() {
                   value={email}
                   className="w-full pl-11 pr-4 py-3 bg-gray-900/60 border border-gray-800 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-gray-600 transition"
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                 />
               </div>
             </div>
 
-            {/* PASSWORD INPUT */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Password</label>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Password
+              </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500">
                   <Lock className="w-5 h-5" />
@@ -148,20 +148,23 @@ function Signup() {
                   value={password}
                   className="w-full pl-11 pr-11 py-3 bg-gray-900/60 border border-gray-800 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-gray-600 transition"
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-300 transition"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
-            {/* CONFIRM PASSWORD INPUT */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Confirm Password</label>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Confirm Password
+              </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500">
                   <Lock className="w-5 h-5" />
@@ -172,32 +175,37 @@ function Signup() {
                   value={confirmPassword}
                   className="w-full pl-11 pr-4 py-3 bg-gray-900/60 border border-gray-800 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-gray-600 transition"
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
                 />
               </div>
             </div>
 
-            {/* SUBMIT BUTTON */}
             <button
               type="submit"
-              disabled={loading || !!success}
-              className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:from-indigo-700 disabled:to-violet-700 text-white font-bold rounded-xl transition duration-200 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 flex items-center justify-center gap-2 mt-4 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+              disabled={loading}
+              className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:from-indigo-700 disabled:to-violet-700 text-white font-bold rounded-xl transition duration-200 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/30 flex items-center justify-center gap-2 mt-2 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                "Create Free Account"
+                "Create Account"
               )}
             </button>
           </form>
 
-          {/* REDIRECT TO SIGNIN */}
           <div className="mt-8 pt-6 border-t border-gray-900/60 text-center text-sm text-gray-400">
             Already have an account?{" "}
-            <Link to="/" className="text-indigo-400 hover:text-indigo-300 font-semibold transition">
-              Sign In
+            <Link to="/signin" className="text-indigo-400 hover:text-indigo-300 font-semibold transition">
+              Sign in
             </Link>
           </div>
         </div>
+
+        <p className="text-center text-xs text-gray-600 mt-6">
+          <Link to="/" className="hover:text-gray-400 transition">
+            ← Back to home
+          </Link>
+        </p>
       </div>
     </div>
   )

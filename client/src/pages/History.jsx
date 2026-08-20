@@ -53,17 +53,57 @@ function History() {
     fetchHistory()
   }, [])
 
-  // Extract score from text using regex
-  const extractScore = (feedbackText) => {
-    if (!feedbackText) return null
-    const match = feedbackText.match(/Overall\s*Score:\s*(\d+(\.\d+)?)\s*\/10/i) || 
-                  feedbackText.match(/Overall\s*Score:\s*(\d+(\.\d+)?)/i) ||
-                  feedbackText.match(/Score:\s*(\d+(\.\d+)?)\s*\/10/i) ||
-                  feedbackText.match(/Overall\s*Score:\s*(\d+(\.\d+)?)/i)
-    if (match && match[1]) {
-      return parseFloat(match[1])
+  // Robust score from full interview document (singular + multi-question sessions)
+  const extractScore = (item) => {
+    if (!item) return null
+    if (typeof item === "string") {
+      const match =
+        item.match(/Overall\s*Score:\s*(\d+(\.\d+)?)/i) ||
+        item.match(/Score:\s*(\d+(\.\d+)?)/i)
+      return match ? parseFloat(match[1]) : null
+    }
+    if (Array.isArray(item.scores) && item.scores.length > 0) {
+      const valid = item.scores.filter((s) => typeof s === "number" && !isNaN(s))
+      if (valid.length > 0) {
+        return parseFloat((valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(1))
+      }
+    }
+    if (typeof item.overallScore === "number" && !isNaN(item.overallScore) && item.overallScore > 0) {
+      return item.overallScore
+    }
+    const texts = []
+    if (item.feedback) texts.push(item.feedback)
+    if (Array.isArray(item.feedbacks)) texts.push(...item.feedbacks.filter(Boolean))
+    for (const fb of texts) {
+      const match =
+        String(fb).match(/Overall\s*Score:\s*(\d+(\.\d+)?)/i) ||
+        String(fb).match(/Score:\s*(\d+(\.\d+)?)/i)
+      if (match) return parseFloat(match[1])
     }
     return null
+  }
+
+  const sessionTitle = (item) => {
+    if (Array.isArray(item.questions) && item.questions.length > 1) {
+      const track = item.track || "Mock"
+      const diff = item.difficulty || ""
+      return `${track}${diff ? " · " + diff : ""} · ${item.questions.length} questions`
+    }
+    return item.question || item.questions?.[0] || "Interview session"
+  }
+
+  const searchableText = (item) => {
+    const parts = [
+      item.question,
+      item.answer,
+      item.feedback,
+      item.track,
+      item.difficulty,
+      ...(Array.isArray(item.questions) ? item.questions : []),
+      ...(Array.isArray(item.answers) ? item.answers : []),
+      ...(Array.isArray(item.feedbacks) ? item.feedbacks : [])
+    ]
+    return parts.filter(Boolean).join(" ").toLowerCase()
   }
 
   // Parse feedback into metrics
@@ -107,21 +147,14 @@ function History() {
   useEffect(() => {
     let result = interviews
 
-    // 1. Text Search
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase()
-      result = result.filter(
-        item => 
-          item.question.toLowerCase().includes(query) || 
-          item.answer.toLowerCase().includes(query) ||
-          item.feedback.toLowerCase().includes(query)
-      )
+      result = result.filter((item) => searchableText(item).includes(query))
     }
 
-    // 2. Score Badge Filter
     if (scoreFilter !== "all") {
-      result = result.filter(item => {
-        const score = extractScore(item.feedback)
+      result = result.filter((item) => {
+        const score = extractScore(item)
         if (score === null) return false
         if (scoreFilter === "high") return score >= 8
         if (scoreFilter === "mid") return score >= 6 && score < 8
@@ -228,8 +261,11 @@ function History() {
           {filteredInterviews.map((item, index) => {
             const isExpanded = expandedId === item._id
             const isConfirmingDelete = confirmDeleteId === item._id
-            const score = extractScore(item.feedback)
-            const scoresParsed = isExpanded && item.feedback ? parseScores(item.feedback) : null
+            const score = extractScore(item)
+            const primaryFeedback = item.feedback || (Array.isArray(item.feedbacks) && item.feedbacks.find(Boolean)) || ""
+            const scoresParsed = isExpanded && primaryFeedback ? parseScores(primaryFeedback) : null
+            const displayQuestion = item.question || (Array.isArray(item.questions) ? item.questions[0] : "") || "—"
+            const displayAnswer = item.answer || (Array.isArray(item.answers) ? item.answers.filter(Boolean).join("\n\n") : "") || "—"
 
             return (
               <div
@@ -257,7 +293,7 @@ function History() {
                       </div>
                     </div>
                     <p className="text-sm font-semibold text-gray-200 truncate">
-                      {item.question}
+                      {sessionTitle(item)}
                     </p>
                   </div>
 
@@ -325,7 +361,7 @@ function History() {
                         <span>Interview Question</span>
                       </div>
                       <p className="text-gray-200 font-medium pl-1 bg-gray-950/30 p-3.5 rounded-xl border border-gray-900/50 leading-relaxed">
-                        {item.question}
+                        {displayQuestion}
                       </p>
                     </div>
 
@@ -336,7 +372,7 @@ function History() {
                         <span>Submitted Answer</span>
                       </div>
                       <p className="text-gray-300 pl-1 bg-gray-950/50 p-4 rounded-xl border border-gray-900/80 leading-relaxed whitespace-pre-wrap">
-                        {item.answer}
+                        {displayAnswer}
                       </p>
                     </div>
 
@@ -396,10 +432,9 @@ function History() {
                             </p>
                           </div>
                         </div>
-                      ) : (
-                        // Fallback display
+                      ) : primaryFeedback ? (
                         <div className="flex flex-col gap-3">
-                          {item.feedback.split("\n").map((line, i) => (
+                          {primaryFeedback.split("\n").map((line, i) => (
                             <div
                               key={i}
                               className="bg-gray-950/50 border border-gray-900 rounded-xl p-3.5 text-xs text-gray-300"
@@ -408,6 +443,8 @@ function History() {
                             </div>
                           ))}
                         </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">No detailed feedback stored for this session.</p>
                       )}
                     </div>
                   </div>

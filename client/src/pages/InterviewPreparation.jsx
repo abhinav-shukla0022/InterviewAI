@@ -1,12 +1,7 @@
-import Layout from "../components/Layout"
 import InterviewPrepHub from "../components/InterviewPrepHub"
 
 function InterviewPreparation() {
-  return (
-    <Layout>
-      <InterviewPrepHub />
-    </Layout>
-  )
+  return <InterviewPrepHub />
 }
 
 export default InterviewPreparation

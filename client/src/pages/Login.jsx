@@ -26,7 +26,6 @@ function Login() {
         password,
       })
 
-      // Since backend returns strings directly for error cases
       if (typeof res.data === "string") {
         setError(res.data)
         setLoading(false)
@@ -37,8 +36,6 @@ function Login() {
         localStorage.setItem("token", res.data.token)
         localStorage.setItem("userName", res.data.name || "Developer")
         localStorage.setItem("userEmail", res.data.email || email)
-        
-        // Redirect to Dashboard
         navigate("/dashboard")
       } else {
         setError("Invalid response from server")
@@ -53,14 +50,13 @@ function Login() {
 
   return (
     <div className="min-h-screen bg-brand-bg text-white flex items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* FLOATING AMBIENT GLOWS */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none animate-float"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none animate-pulse-slow"></div>
 
       <div className="w-full max-w-md z-10">
-        {/* LOGO & HERO HEADLINE */}
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="p-3 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl shadow-xl shadow-indigo-500/25 mb-4 animate-float">
+        {/* Logo → home */}
+        <Link to="/" className="flex flex-col items-center mb-8 text-center group">
+          <div className="p-3 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl shadow-xl shadow-indigo-500/25 mb-4 transition group-hover:scale-105">
             <Bot className="w-8 h-8 text-white" />
           </div>
           <h1 className="font-display text-4xl font-extrabold tracking-tight text-white">
@@ -69,9 +65,8 @@ function Login() {
           <p className="text-gray-400 text-sm mt-2 max-w-xs">
             Unlock your interview potential with instant interactive AI assessments
           </p>
-        </div>
+        </Link>
 
-        {/* LOGIN CARD */}
         <div className="glass-panel rounded-3xl p-8 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-emerald-500"></div>
 
@@ -85,9 +80,10 @@ function Login() {
           )}
 
           <form onSubmit={handleLogin} className="space-y-5">
-            {/* EMAIL INPUT */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Email Address</label>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Email Address
+              </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500">
                   <Mail className="w-5 h-5" />
@@ -98,15 +94,15 @@ function Login() {
                   value={email}
                   className="w-full pl-11 pr-4 py-3.5 bg-gray-900/60 border border-gray-800 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-gray-600 transition"
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                 />
               </div>
             </div>
 
-            {/* PASSWORD INPUT */}
             <div className="space-y-1.5">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Password</label>
-              </div>
+              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Password
+              </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500">
                   <Lock className="w-5 h-5" />
@@ -117,18 +113,19 @@ function Login() {
                   value={password}
                   className="w-full pl-11 pr-11 py-3.5 bg-gray-900/60 border border-gray-800 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-white placeholder-gray-600 transition"
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-300 transition"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
-            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={loading}
@@ -142,14 +139,19 @@ function Login() {
             </button>
           </form>
 
-          {/* REDIRECT TO SIGNUP */}
           <div className="mt-8 pt-6 border-t border-gray-900/60 text-center text-sm text-gray-400">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link to="/signup" className="text-indigo-400 hover:text-indigo-300 font-semibold transition">
               Create an account
             </Link>
           </div>
         </div>
+
+        <p className="text-center text-xs text-gray-600 mt-6">
+          <Link to="/" className="hover:text-gray-400 transition">
+            ← Back to home
+          </Link>
+        </p>
       </div>
     </div>
   )
